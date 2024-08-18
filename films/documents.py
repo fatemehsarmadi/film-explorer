@@ -27,6 +27,11 @@ class FilmDocument(Document):
             'keyword': Keyword()
         }
     )
+    cast = Text(
+        fields = {
+            'keyword': Keyword()
+        }
+    )
     release_date = Date()
     status = Keyword()
     original_language = Keyword()
