@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'films.apps.FilmsConfig',
     'rest_framework',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [

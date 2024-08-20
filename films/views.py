@@ -14,6 +14,9 @@ INDEX_NAME = 'films'
 
 class FilmViewSet(viewsets.ViewSet):
     def list(self, request):
+        """
+        Retrieves a list of films with optional filtering based on rating, runtime, and release date.
+        """
         search = search_index(INDEX_NAME)
 
         params = request.GET
@@ -74,6 +77,9 @@ class FilmViewSet(viewsets.ViewSet):
         return Response(serializer.data)
     
     def top_films(self, request):
+        """
+        Returns a list of top films based on their rating, with optional filtering by genre and count.
+        """
         search = search_index(INDEX_NAME)
         count = request.GET.get('count')
         genre = request.GET.get('genre')
@@ -107,6 +113,9 @@ class FilmViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def genres(self, request):
+        """
+        Provides aggregated data on film genres, including average ratings, top films, and popular films within each genre.
+        """
         search = search_index(INDEX_NAME)
 
         FIELD_GENRES = 'genres'
@@ -145,6 +154,9 @@ class FilmViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def directors(self, request):
+        """
+        Aggregates data on film directors, including average ratings of films directed by each director and the top film for each director.
+        """
         search = search_index(INDEX_NAME)
 
         FIELD_VOTE_AVERAGE = 'vote_average'
@@ -172,6 +184,9 @@ class FilmViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['get'])
     def crew_analysis(self, request, id):
+        """
+        Provides an analysis of the crew for a specific film, including the count of crew members by department and job.
+        """
         search = search_index(INDEX_NAME)
 
         search = search.query(Q('term', _id=id))
@@ -202,6 +217,9 @@ class FilmViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def analysis(self, request):
+        """
+        Offers a yearly analysis of the number of films released, presented as a histogram.
+        """
         search = search_index(INDEX_NAME)
 
         search.aggs.bucket('films_per_year', 'date_histogram', field = 'release_date', interval = 'year', format = 'yyyy', min_doc_count = 1)
@@ -218,6 +236,9 @@ class FilmViewSet(viewsets.ViewSet):
 
 class SearchFilmAPIView(APIView):
     def get(self, request):
+        """
+        Allows searching for films based on title, genres, cast, and director, with pagination support.
+        """
         search = search_index(INDEX_NAME)
 
         params = request.GET
