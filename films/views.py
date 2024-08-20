@@ -4,17 +4,17 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework import viewsets
-from elasticsearch_dsl import Search, Q, A
+from elasticsearch_dsl import Q, A
 from . import serializers
 from datetime import datetime
 from films.aggregations import build_top_film_agg, build_popular_film_agg
-from config.elasticsearch_config import create_elasticsearch_connection
+from config.elasticsearch_config import search_index
 
-es = create_elasticsearch_connection()
+INDEX_NAME = 'films'
 
 class FilmViewSet(viewsets.ViewSet):
     def list(self, request):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
 
         params = request.GET
         rating_gte = params.get('rating_gte', '')
@@ -74,7 +74,7 @@ class FilmViewSet(viewsets.ViewSet):
         return Response(serializer.data)
     
     def top_films(self, request):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
         count = request.GET.get('count')
         genre = request.GET.get('genre')
 
@@ -107,7 +107,7 @@ class FilmViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['get'])
     def genres(self, request):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
 
         FIELD_GENRES = 'genres'
         FIELD_VOTE_AVERAGE = 'vote_average'
@@ -145,7 +145,7 @@ class FilmViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def directors(self, request):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
 
         FIELD_VOTE_AVERAGE = 'vote_average'
 
@@ -172,7 +172,7 @@ class FilmViewSet(viewsets.ViewSet):
     
     @action(detail=True, methods=['get'])
     def crew_analysis(self, request, id):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
 
         search = search.query(Q('term', _id=id))
         search.aggs.bucket('films', 'terms', field = '_id') \
@@ -202,7 +202,7 @@ class FilmViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['get'])
     def analysis(self, request):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
 
         search.aggs.bucket('films_per_year', 'date_histogram', field = 'release_date', interval = 'year', format = 'yyyy', min_doc_count = 1)
 
@@ -218,7 +218,7 @@ class FilmViewSet(viewsets.ViewSet):
 
 class SearchFilmAPIView(APIView):
     def get(self, request):
-        search = Search(using = es, index = 'films')
+        search = search_index(INDEX_NAME)
 
         params = request.GET
         title = params.get('title', '')
